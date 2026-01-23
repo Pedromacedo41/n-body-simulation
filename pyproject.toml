@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "nbody-app"
+version = "0.1.0"
+description = "Streamlit + Three.js visualization for N-body simulations"
+authors = ["Pedro Macedo Flores <pedro@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<4.0"
+nbody-sim = { path = "packages/nbody_sim", develop = true }
+streamlit = "^1.53.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

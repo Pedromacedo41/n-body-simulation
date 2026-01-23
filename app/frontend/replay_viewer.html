@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body {
+  margin: 0;
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
+}
+
+/* TOGGLE BUTTON */
+.sidebar-toggle {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1001;
+
+  background: rgba(0, 180, 90, 0.7);
+  border: 1px solid rgba(0, 255, 150, 0.6);
+  color: #eafff2;
+
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+
+  font-size: 13px;
+}
+
+/* SIDEBAR */
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 320px;
+    height: 100vh;
+
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(1px);
+
+    padding: 14px;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    color: #c8facc;
+    z-index: 1000;
+
+    transition: transform 0.25s ease;
+    overflow-y: auto;     
+    overflow-x: hidden;   
+  }
+
+  .sidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 150, 0.35);
+    border-radius: 4px;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 150, 0.6);
+  }
+
+  .sidebar.hidden {
+    transform: translateX(100%);
+  }
+
+  /* SECTIONS */
+  .section {
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 10px;
+  }
+
+  .section:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.85;
+    margin-bottom: 8px;
+  }
+
+  /* CONTROLS */
+  .control-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .control-row.center {
+    justify-content: center;
+  }
+
+  .control-column {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  
+
+
+
+  .control-label {
+  font-size: 11px;
+  opacity: 0.85;
+  min-width: 70px;
+}
+
+.control-checkbox {
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.controls-row input[type="text"] {
+  flex: 1;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 4px;
+  padding: 3px 6px;
+  color: #eafff2;
+  size: 50px;
+  font-size: 11px;
+}
+
+.controls-row select {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 4px;
+  color: #eafff2;
+  font-size: 11px;
+}
+
+  .control-value {
+    font-size: 12px;
+    opacity: 0.7;
+    text-align: center;
+  }
+
+  /* INPUTS */
+  input[type="range"] {
+    width: 100%;
+    accent-color: #00d47a;
+  }
+
+  input[type="checkbox"] {
+    accent-color: #00d47a;
+  }
+
+  /* BUTTONS */
+  button {
+    background: rgba(0, 180, 90, 0.6);
+    border: 1px solid rgba(0, 255, 150, 0.6);
+    color: #eafff2;
+
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+
+    font-size: 12px;
+  }
+
+  button:hover {
+    background: rgba(0, 220, 120, 0.8);
+  }
+
+  .accordion {
+    border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .accordion-header {
+      padding: 6px 8px;
+      background: rgba(0,0,0,0.25);
+      cursor: pointer;
+
+      display: flex;
+      justify-content: space-between;
+    align-items: center;
+
+    font-size: 12px;
+  }
+
+  .accordion-content {
+    padding: 8px;
+    display: none;
+
+    flex-direction: column;
+    gap: 6px;
+
+    font-size: 11px;
+  }
+
+  .accordion.open .accordion-content {
+    display: flex;
+  }
+  
+  .control-grid {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.control-name {
+  font-size: 11px;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+.control-grid input,
+.control-grid select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 4px;
+
+  padding: 4px 6px;
+  margin: 0;
+
+  color: #eafff2;
+  font-size: 11px;
+  line-height: 1.2;
+
+  appearance: none;          
+  -webkit-appearance: none;
+}
+
+.control-grid select {
+  background-image:
+    linear-gradient(45deg, transparent 50%, #c8facc 50%),
+    linear-gradient(135deg, #c8facc 50%, transparent 50%);
+  background-position:
+    calc(100% - 12px) center,
+    calc(100% - 7px) center;
+  background-size:
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+}
+
+
+.sidebar *,
+.sidebar *::before,
+.sidebar *::after {
+  box-sizing: border-box;
+}
+
+.control-grid input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+
+  appearance: auto;
+  -webkit-appearance: checkbox;
+
+  accent-color: #00d47a;
+  cursor: pointer;
+}
+
+.duration-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.duration-slider {
+  flex: 1;
+}
+
+.duration-input {
+  width: 54px;
+  text-align: start;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 4px;
+  padding: 2px 4px;
+  color: #eafff2;
+  font-size: 11px;
+}
+
+
+
+
+
+
+  </style>
+</head>
+<body>
+
+<button id="toggle-sidebar" class="sidebar-toggle">☰</button>
+
+<div id="sidebar" class="sidebar">
+
+  <div class="section">
+    <div class="section-title">Player</div>
+
+    <div class="control-row center">
+      <button id="play">Play</button>
+      <button id="pause">Pause</button>
+    </div>
+
+    <div class="control-column">
+      <span class="control-label">Timeline</span>
+      <input type="range" id="timeline" />
+      <span id="time-label" class="control-value"></span>
+    </div>
+
+    <div class="control-column">
+      <span class="control-label">Speed</span>
+      <input
+        type="range"
+        id="speed-slider"
+        min="0.1"
+        max="5"
+        step="0.1"
+        value="1"
+      />
+      <span id="speed-label" class="control-value"></span>
+    </div>
+  </div>
+
+  <!-- CAMERA -->
+  <div class="section">
+    <div class="section-title">Camera</div>
+
+    <div class="control-row center">
+      <button id="reset-camera">Reset view</button>
+      <button id="fit-camera">Center & zoom</button>
+    </div>
+
+    <div class="control-row">
+      
+    </div>
+  </div>
+
+  <!-- DISPLAY -->
+  <div class="section">
+    <div class="section-title">Display settings</div>
+
+    <div class="control-row">
+      <span class="control-label">Grid</span>
+      <input type="checkbox" id="toggle-grid" checked />
+    </div>
+
+    <div class="control-row">
+      <span class="control-label">Axes (XYZ)</span>
+      <input type="checkbox" id="toggle-axes" checked />
+    </div>
+
+    <div class="control-column">
+      <span class="control-label">Grid size</span>
+      <input type="range" id="grid-size" min="2" max="100" step="1" value="50" />
+    </div>
+
+    <div class="control-column">
+      <span class="control-label">Grid divisions</span>
+      <input
+        type="range"
+        id="grid-divisions"
+        min="2"
+        max="100"
+        step="1"
+        value="50"
+      />
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Bodies display</div>
+
+    <div id="bodies-panel"></div>
+  </div>
+
+</div>
+
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.159.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+  import * as THREE from "https://unpkg.com/three@0.159.0/build/three.module.js";
+  import { OrbitControls } from "https://unpkg.com/three@0.159.0/examples/jsm/controls/OrbitControls.js";
+
+  const sidebar = document.getElementById("sidebar");
+  const toggle = document.getElementById("toggle-sidebar");
+
+  toggle.onclick = () => {
+    sidebar.classList.toggle("hidden");
+  };
+
+  document.addEventListener("input", (e) => {
+    const bodyIndex = e.target.dataset.body;
+    const field = e.target.dataset.field;
+
+    if (bodyIndex === undefined || !field) return;
+
+    const cfg = bodyDisplayConfig[bodyIndex];
+
+    if (field === "label") {
+      const accordion = e.target.closest(".accordion");
+      const title = accordion.querySelector(".accordion-title");
+
+      title.textContent =
+        e.target.value.trim() || `Body ${bodyIndex + 1}`;
+    }
+
+    if (field === "trajectory.duration") {
+      const row = e.target.closest(".duration-row");
+      if (row) {
+        row.querySelectorAll("input").forEach(el => {
+          if (el !== e.target) {
+            el.value = e.target.value;
+          }
+        });
+      }
+
+      cfg.trajectory.duration = parseFloat(e.target.value);
+    }
+
+
+    // support champs imbriqués : trajectory.enabled
+    const path = field.split(".");
+    let obj = cfg;
+    for (let i = 0; i < path.length - 1; i++) {
+      obj = obj[path[i]];
+    }
+
+    obj[path[path.length - 1]] =
+      e.target.type === "checkbox" ? e.target.checked :
+      e.target.type === "range" ? parseFloat(e.target.value) :
+      e.target.value;
+
+    console.log("Updated config:", bodyDisplayConfig);
+  });
+
+
+
+
+  // Injected by Streamlit
+  const REPLAY = window.REPLAY_DATA;
+
+  const totalFrames = REPLAY.positions.length;
+
+  const timeline = document.getElementById("timeline");
+  timeline.max = totalFrames - 1;
+
+  const timeLabel = document.getElementById("time-label");
+
+  const bodyDisplayConfig = REPLAY.positions[0].map((_, i) => ({
+    id: i,
+    name: `Body ${i + 1}`,
+
+    visible: true,
+    showLabel: false,
+
+    color: "#00d47a",
+
+    renderMode: "sphere", // "point" | "sphere"
+
+    trajectory: {
+      enabled: false,
+      mode: "persistent", // "persistent" | "duration"
+      duration: 5.0        // seconds (used if mode === "duration")
+    }
+  }));
+
+  const bodiesPanel = document.getElementById("bodies-panel");
+
+  bodyDisplayConfig.forEach((cfg, i) => {
+    const bodyDiv = document.createElement("div");
+    bodyDiv.className = "accordion";
+
+    bodyDiv.innerHTML = `
+  <div class="accordion-header">
+    <span class="accordion-title">${cfg.name}</span>
+    <span class="accordion-toggle">▾</span>
+  </div>
+
+  <div class="accordion-content">
+
+    <div class="control-grid">
+
+      <!-- Show label -->
+      <div class="control-name">Show label</div>
+      <input
+        type="checkbox"
+        ${cfg.showLabel ? "checked" : ""}
+        data-body="${i}"
+        data-field="showLabel"
+      />
+
+      <!-- Label -->
+      <div class="control-name">Label</div>
+      <input
+        type="text"
+        value="${cfg.name}"
+        data-body="${i}"
+        data-field="label"
+      />
+
+      
+
+      <!-- Color -->
+      <div class="control-name">Color</div>
+      <input
+        type="color"
+        value="${cfg.color}"
+        data-body="${i}"
+        data-field="color"
+      />
+
+      <!-- Render mode -->
+      <div class="control-name">Render</div>
+      <select data-body="${i}" data-field="renderMode">
+        <option value="sphere" ${cfg.renderMode === "sphere" ? "selected" : ""}>
+          Sphere
+        </option>
+        <option value="point" ${cfg.renderMode === "point" ? "selected" : ""}>
+          Point
+        </option>
+      </select>
+
+      <!-- Trajectory enabled -->
+      <div class="control-name">Trajectory</div>
+      <input
+        type="checkbox"
+        ${cfg.trajectory.enabled ? "checked" : ""}
+        data-body="${i}"
+        data-field="trajectory.enabled"
+      />
+
+      <!-- Trajectory mode -->
+      <div class="control-name">Trail mode</div>
+      <select data-body="${i}" data-field="trajectory.mode">
+        <option
+          value="persistent"
+          ${cfg.trajectory.mode === "persistent" ? "selected" : ""}
+        >
+          Persistent
+        </option>
+        <option
+          value="duration"
+          ${cfg.trajectory.mode === "duration" ? "selected" : ""}
+        >
+          Duration
+        </option>
+      </select>
+
+      <!-- Trajectory duration -->
+      <div class="control-name">Trail (s)</div>
+      <div class="duration-row">
+        <input
+          type="number"
+          min="0.1"
+          max="30"
+          step="0.1"
+          value="${cfg.trajectory.duration}"
+          data-body="${i}"
+          data-field="trajectory.duration"
+          class="duration-input"
+        />
+      </div>
+
+    </div>
+  </div>
+`;
+
+
+
+
+      bodiesPanel.appendChild(bodyDiv);
+    });
+
+
+  document.querySelectorAll(".accordion-header").forEach(header => {
+    header.addEventListener("click", () => {
+      header.parentElement.classList.toggle("open");
+    });
+  });
+
+
+  function updateFrame(f) {
+    for (let i = 0; i < bodies.length; i++) {
+      const [x, y, z] = REPLAY.positions[f][i];
+      bodies[i].position.set(x, y, z);
+    }
+
+    timeLabel.innerText = `Frame: ${f}`;
+  }
+
+  timeline.addEventListener("input", () => {
+    frame = parseInt(timeline.value);
+    updateFrame(frame);
+  });
+
+  let speed = 1;
+  let frame = 0;
+  let frameFloat = 0;
+  let frameIndex = 0;
+
+
+  let playing = false;
+
+  // Scene
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.z = 5;
+
+  const axesHelper = new THREE.AxesHelper(1.5);
+  scene.add(axesHelper);
+
+  const toggleAxesInput = document.getElementById("toggle-axes");
+
+  toggleAxesInput.addEventListener("change", (e) => {
+    axesHelper.visible = e.target.checked;
+  });
+
+
+  const gridSize = 50;
+  const gridDivisions = 50;
+
+  let gridHelper = null;
+
+  function createGrid(size, divisions) {
+    if (gridHelper) {
+      scene.remove(gridHelper);
+      gridHelper.geometry.dispose();
+      gridHelper.material.dispose();
+    }
+
+    gridHelper = new THREE.GridHelper(
+      size,
+      divisions,
+      0x444444,
+      0x888888
+    );
+
+    gridHelper.material.opacity = 0.5;
+    gridHelper.material.transparent = true;
+
+    scene.add(gridHelper);
+  }
+
+  function updateGridPosition() {
+    if (!gridHelper) return;
+
+    gridHelper.position.x = Math.round(camera.position.x);
+    gridHelper.position.z = Math.round(camera.position.z);
+  }
+
+
+
+
+  const gridSizeInput = document.getElementById("grid-size");
+  const gridDivisionsInput = document.getElementById("grid-divisions");
+  const toggleGridInput = document.getElementById("toggle-grid");
+
+  // initial grid
+  createGrid(
+    Number(gridSizeInput.value),
+    Number(gridDivisionsInput.value)
+  );
+
+  
+
+  const speedSlider = document.getElementById("speed-slider");
+  const speedLabel = document.getElementById("speed-label");
+
+  // speed slider event
+  timeline.addEventListener("input", () => {
+    frameIndex = parseInt(timeline.value);
+    frameFloat = frameIndex;   
+    updateFrame(frameIndex);
+  });
+
+  speedSlider.addEventListener("input", () => {
+    speed = parseFloat(speedSlider.value);
+    speedLabel.innerText = `Speed: ×${speed.toFixed(1)}`;
+
+    frameFloat = frameIndex;
+  });
+
+
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+
+  controls.enableZoom = true;
+  controls.zoomSpeed = 0.8;
+
+  controls.enableRotate = true;
+  controls.rotateSpeed = 0.6;
+
+  controls.enablePan = true;
+  controls.panSpeed = 1.0;
+  controls.screenSpacePanning = true;
+
+  controls.mouseButtons = {
+    LEFT: THREE.MOUSE.ROTATE,
+    MIDDLE: THREE.MOUSE.DOLLY,
+    RIGHT: THREE.MOUSE.PAN
+  };
+
+
+  function resetCamera() {
+    camera.position.set(3, 3, 3);
+    controls.target.set(0, 0, 0);
+    controls.update();
+  }
+
+  function fitCameraToScene(radius = 1.5) {
+    const distance = radius / Math.tan((camera.fov * Math.PI) / 360);
+    camera.position.set(distance, distance, distance);
+    controls.target.set(0, 0, 0);
+    controls.update();
+  }
+
+
+  document
+    .getElementById("reset-camera")
+    .addEventListener("click", resetCamera);
+
+  document
+    .getElementById("fit-camera")
+    .addEventListener("click", () => fitCameraToScene(2));
+
+
+
+  // Bodies
+  const bodies = [];
+  const geometry = new THREE.SphereGeometry(0.05, 16, 16);
+  const material = new THREE.MeshBasicMaterial({ color: 0x0077ff });
+
+  for (let i = 0; i < REPLAY.positions[0].length; i++) {
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+    bodies.push(mesh);
+  }
+
+  // Controls
+  document.getElementById("play").onclick = () => playing = true;
+  document.getElementById("pause").onclick = () => playing = false;
+
+  gridSizeInput.addEventListener("input", () => {
+    createGrid(
+      Number(gridSizeInput.value),
+      Number(gridDivisionsInput.value)
+    );
+  });
+
+  gridDivisionsInput.addEventListener("input", () => {
+    createGrid(
+      Number(gridSizeInput.value),
+      Number(gridDivisionsInput.value)
+    );
+  });
+
+  toggleGridInput.addEventListener("change", (e) => {
+    if (gridHelper) {
+      gridHelper.visible = e.target.checked;
+    }
+  });
+
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    if (playing) {
+      frameFloat += speed;
+
+      frameIndex = Math.floor(frameFloat);
+
+      if (frameIndex >= totalFrames) {
+        frameIndex = totalFrames - 1;
+        frameFloat = frameIndex;
+        playing = false;
+      }
+
+      timeline.value = frameIndex;
+      updateFrame(frameIndex);
+    }
+    updateGridPosition();
+
+    renderer.render(scene, camera);
+    controls.update();
+  }
+
+
+  animate();
+</script>
+
+</body>
+</html>
+
