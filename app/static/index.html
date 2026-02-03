@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+
+  <!-- =====================================================
+       STYLES
+  ====================================================== -->
+  <style>
+    /* ================= Base ================= */
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: system-ui, sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    /* ================= Sidebar toggle ================= */
+    .sidebar-toggle {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 1001;
+      background: rgba(0, 180, 90, 0.7);
+      border: 1px solid rgba(0, 255, 150, 0.6);
+      color: #eafff2;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    /* ================= Sidebar ================= */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 320px;
+      height: 100vh;
+      padding: 14px;
+
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(1px);
+      color: #c8facc;
+
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+
+      overflow-y: auto;
+      transition: transform 0.25s ease;
+      z-index: 1000;
+    }
+
+    .sidebar.hidden {
+      transform: translateX(100%);
+    }
+
+    /* ================= Sections ================= */
+    .section {
+      border-top: 1px solid rgba(255,255,255,0.15);
+      padding-top: 10px;
+    }
+
+    .section:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      opacity: 0.85;
+    }
+
+    /* ================= Controls ================= */
+    .control-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .control-row.center {
+      justify-content: center;
+    }
+
+    .control-column {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .control-label {
+      font-size: 11px;
+      opacity: 0.85;
+    }
+
+    .control-value {
+      font-size: 12px;
+      opacity: 0.7;
+      text-align: center;
+    }
+
+    /* ================= Inputs ================= */
+    input[type="range"],
+    input[type="checkbox"] {
+      accent-color: #00d47a;
+    }
+
+    input,
+    select {
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 4px;
+      padding: 4px 6px;
+      color: #eafff2;
+      font-size: 11px;
+    }
+
+    /* ================= Buttons ================= */
+    button {
+      background: rgba(0, 180, 90, 0.6);
+      border: 1px solid rgba(0, 255, 150, 0.6);
+      color: #eafff2;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    button:hover {
+      background: rgba(0, 220, 120, 0.8);
+    }
+
+    /* ================= Accordion ================= */
+    .accordion {
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .accordion-header {
+      padding: 6px 8px;
+      background: rgba(0,0,0,0.25);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+
+    .accordion-content {
+      display: none;
+      padding: 8px;
+    }
+
+    .accordion.open .accordion-content {
+      display: block;
+    }
+
+    /* ================= Control grid ================= */
+    .control-grid {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 6px 10px;
+      align-items: center;
+    }
+
+    .control-name {
+      font-size: 11px;
+      opacity: 0.85;
+      white-space: nowrap;
+    }
+
+    .duration-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .duration-input {
+      width: 54px;
+    }
+  </style>
+</head>
+
+<body>
+
+<button id="toggle-sidebar" class="sidebar-toggle">☰</button>
+
+<div id="sidebar" class="sidebar">
+
+  <!-- PLAYER -->
+  <div class="section">
+    <div class="section-title">Player</div>
+
+    <div class="control-row center">
+      <button id="play">Play</button>
+      <button id="pause">Pause</button>
+    </div>
+
+    <div class="control-column">
+      <span class="control-label">Timeline</span>
+      <input type="range" id="timeline" />
+      <span id="time-label" class="control-value"></span>
+    </div>
+
+    <div class="control-column">
+      <span class="control-label">Speed</span>
+      <input type="range" id="speed-slider" min="0.1" max="5" step="0.1" value="1" />
+      <span id="speed-label" class="control-value"></span>
+    </div>
+  </div>
+
+  <!-- CAMERA -->
+  <div class="section">
+    <div class="section-title">Camera</div>
+    <div class="control-row center">
+      <button id="reset-camera">Reset view</button>
+      <button id="fit-camera">Center & zoom</button>
+    </div>
+  </div>
+
+  <!-- DISPLAY -->
+  <div class="section">
+    <div class="section-title">Display</div>
+
+    <div class="control-row">
+      <span class="control-label">Grid</span>
+      <input type="checkbox" id="toggle-grid" checked />
+    </div>
+
+    <div class="control-row">
+      <span class="control-label">Axes</span>
+      <input type="checkbox" id="toggle-axes" checked />
+    </div>
+
+    <div class="control-column">
+      <span class="control-label">Grid size</span>
+      <input type="range" id="grid-size" min="2" max="100" value="50" />
+    </div>
+
+    <div class="control-column">
+      <span class="control-label">Grid divisions</span>
+      <input type="range" id="grid-divisions" min="2" max="100" value="50" />
+    </div>
+  </div>
+
+  <!-- BODIES -->
+  <div class="section">
+    <div class="section-title">Bodies</div>
+    <div id="bodies-panel"></div>
+  </div>
+
+</div>
+
+<!-- =====================================================
+     SCRIPTS
+===================================================== -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.159.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "https://unpkg.com/three@0.159.0/examples/jsm/controls/OrbitControls.js";
+
+/* =====================================================
+   UI
+===================================================== */
+const sidebar = document.getElementById("sidebar");
+document.getElementById("toggle-sidebar").onclick =
+  () => sidebar.classList.toggle("hidden");
+
+/* =====================================================
+   DATA
+===================================================== */
+const REPLAY = window.REPLAY_DATA;
+const totalFrames = REPLAY.positions.length;
+
+/* =====================================================
+   BODY DISPLAY CONFIG
+===================================================== */
+const bodyDisplayConfig = REPLAY.positions[0].map((_, i) => ({
+  id: i,
+  name: `Body ${i + 1}`,
+  visible: true,
+  showLabel: false,
+  color: "#00d47a",
+  renderMode: "sphere",
+  trajectory: {
+    enabled: false,
+    mode: "persistent",
+    duration: 5.0
+  }
+}));
+
+/* =====================================================
+   BODIES PANEL UI
+===================================================== */
+const bodiesPanel = document.getElementById("bodies-panel");
+
+bodyDisplayConfig.forEach((cfg, i) => {
+  const el = document.createElement("div");
+  el.className = "accordion";
+
+  el.innerHTML = `
+    <div class="accordion-header">
+      <span class="accordion-title">${cfg.name}</span>
+      <span>▾</span>
+    </div>
+
+    <div class="accordion-content">
+      <div class="control-grid">
+
+        <div class="control-name">Show label</div>
+        <input type="checkbox" data-body="${i}" data-field="showLabel" />
+
+        <div class="control-name">Label</div>
+        <input type="text" value="${cfg.name}" data-body="${i}" data-field="label"/>
+
+        <div class="control-name">Color</div>
+        <input type="color" value="${cfg.color}" data-body="${i}" data-field="color"/>
+
+        <div class="control-name">Render</div>
+        <select data-body="${i}" data-field="renderMode">
+          <option value="sphere">Sphere</option>
+          <option value="point">Point</option>
+        </select>
+
+        <div class="control-name">Trajectory</div>
+        <input type="checkbox" data-body="${i}" data-field="trajectory.enabled"/>
+
+        <div class="control-name">Trail mode</div>
+        <select data-body="${i}" data-field="trajectory.mode">
+          <option value="persistent">Persistent</option>
+          <option value="duration">Duration</option>
+        </select>
+
+        <div class="control-name">Trail (s)</div>
+        <div class="duration-row">
+          <input type="number" class="duration-input"
+            value="${cfg.trajectory.duration}"
+            data-body="${i}" data-field="trajectory.duration"/>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  bodiesPanel.appendChild(el);
+});
+
+document.querySelectorAll(".accordion-header").forEach(h =>
+  h.onclick = () => h.parentElement.classList.toggle("open")
+);
+
+/* =====================================================
+   INPUT DISPATCHER
+===================================================== */
+document.addEventListener("input", (e) => {
+  const i = e.target.dataset.body;
+  const field = e.target.dataset.field;
+  if (i === undefined || !field) return;
+
+  const cfg = bodyDisplayConfig[i];
+
+  if (field === "label") {
+    e.target.closest(".accordion")
+      .querySelector(".accordion-title").textContent =
+        e.target.value || `Body ${+i + 1}`;
+  }
+
+  const path = field.split(".");
+  let obj = cfg;
+  for (let j = 0; j < path.length - 1; j++) obj = obj[path[j]];
+
+  obj[path.at(-1)] =
+    e.target.type === "checkbox" ? e.target.checked :
+    e.target.type === "number" ? Number(e.target.value) :
+    e.target.value;
+});
+
+/* =====================================================
+   THREE.JS SETUP
+===================================================== */
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(3,3,3);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+/* Helpers */
+const axesHelper = new THREE.AxesHelper(1.5);
+scene.add(axesHelper);
+document.getElementById("toggle-axes").onchange =
+  e => axesHelper.visible = e.target.checked;
+
+/* =====================================================
+   GRID
+===================================================== */
+let gridHelper = null;
+
+function createGrid(size, div) {
+  if (gridHelper) scene.remove(gridHelper);
+  gridHelper = new THREE.GridHelper(size, div);
+  gridHelper.material.opacity = 0.5;
+  gridHelper.material.transparent = true;
+  scene.add(gridHelper);
+}
+
+const gridSize = document.getElementById("grid-size");
+const gridDivs = document.getElementById("grid-divisions");
+createGrid(+gridSize.value, +gridDivs.value);
+
+gridSize.oninput = gridDivs.oninput =
+  () => createGrid(+gridSize.value, +gridDivs.value);
+
+document.getElementById("toggle-grid").onchange =
+  e => gridHelper.visible = e.target.checked;
+
+/* =====================================================
+   BODIES
+===================================================== */
+const bodies = [];
+const geom = new THREE.SphereGeometry(0.05, 16, 16);
+const mat = new THREE.MeshBasicMaterial({ color: 0x00d47a });
+
+REPLAY.positions[0].forEach(() => {
+  const m = new THREE.Mesh(geom, mat);
+  scene.add(m);
+  bodies.push(m);
+});
+
+/* =====================================================
+   PLAYER
+===================================================== */
+let frame = 0, frameFloat = 0, speed = 1, playing = false;
+
+const timeline = document.getElementById("timeline");
+timeline.max = totalFrames - 1;
+
+document.getElementById("play").onclick = () => playing = true;
+document.getElementById("pause").onclick = () => playing = false;
+
+timeline.oninput = () => {
+  frame = frameFloat = +timeline.value;
+  updateFrame(frame);
+};
+
+document.getElementById("speed-slider").oninput = e => {
+  speed = +e.target.value;
+  document.getElementById("speed-label").textContent = `×${speed.toFixed(1)}`;
+};
+
+function updateFrame(f) {
+  bodies.forEach((b,i) => {
+    const [x,y,z] = REPLAY.positions[f][i];
+    b.position.set(x,y,z);
+  });
+  document.getElementById("time-label").textContent = `Frame ${f}`;
+}
+
+/* =====================================================
+   CAMERA BUTTONS
+===================================================== */
+document.getElementById("reset-camera").onclick = () => {
+  camera.position.set(3,3,3);
+  controls.target.set(0,0,0);
+};
+
+document.getElementById("fit-camera").onclick = () => {
+  camera.position.set(2,2,2);
+  controls.target.set(0,0,0);
+};
+
+/* =====================================================
+   LOOP
+===================================================== */
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (playing) {
+    frameFloat += speed;
+    frame = Math.min(Math.floor(frameFloat), totalFrames - 1);
+    timeline.value = frame;
+    updateFrame(frame);
+    if (frame === totalFrames - 1) playing = false;
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+animate();
+</script>
+
+</body>
+</html>
