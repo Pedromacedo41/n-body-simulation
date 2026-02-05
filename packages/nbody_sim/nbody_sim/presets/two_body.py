@@ -27,8 +27,10 @@ def two_body_circular(
     ])
 
     masses = np.array([mass, mass])
-
+    vecteur=np.array([positions,velocities])
+    
     return System(
+        vecteur=vecteur,
         positions=positions,
         velocities=velocities,
         masses=masses,
