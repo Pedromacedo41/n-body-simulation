@@ -9,7 +9,7 @@ def on_replay_change():
     st.session_state.selected_replay = st.session_state.replay_selects
 
 def render_threejs_viewer(replay):
-    with open("app/frontend/replay_viewer.html") as f:
+    with open("app/static/index.html") as f:
         html = f.read()
 
     payload = {
