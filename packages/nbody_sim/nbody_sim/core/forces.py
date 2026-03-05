@@ -10,7 +10,7 @@ def gravitational_forces(system: System) -> np.ndarray:
 
     for i in range(n):
         r = pos - pos[i]
-        dist = np.linalg.norm(r, axis=1) + 1e-9
+        dist = np.linalg.norm(r, axis=1) 
         mask = dist > 0
 
         forces[i] = system.G * np.sum(
@@ -18,4 +18,4 @@ def gravitational_forces(system: System) -> np.ndarray:
             axis=0
         )
 
-    return forces
+    return forces #Return acceleration : a=f/m

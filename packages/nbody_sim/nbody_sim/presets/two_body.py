@@ -19,7 +19,7 @@ def two_body_circular(
     ])
 
     # Circular velocity
-    v = np.sqrt(G * mass / (2 * r))
+    v = np.sqrt(G * mass / (4 * r))
 
     velocities = np.array([
         [0.0,  v, 0.0],
