@@ -10,6 +10,15 @@ class System:
     velocities: Array     # (N, 3)
     masses: Array         # (N,)
     G: float = 1.0
+    @property
+    def vecteur_etat(self): #Vecteur contenant les positions et les vitesses, 
+                        #pratique pour coder les intégrateurs
+        return np.stack([self.velocities, self.positions], axis=0)
+
+    @vecteur_etat.setter
+    def vecteur_etat(self, value): #Met à jour les positions et les vitesses
+        self.velocities = value[0]
+        self.positions  = value[1]
 
     def copy(self) -> "System":
         return System(
@@ -26,6 +35,8 @@ class ReplayMeta:
     steps: int
     integrator: str
     preset: str
+
+
 
 @dataclass
 class ReplayData:
