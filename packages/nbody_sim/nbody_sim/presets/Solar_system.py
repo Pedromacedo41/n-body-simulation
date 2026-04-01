@@ -4,7 +4,7 @@ from skyfield.api import load
 
 def Solar_system(name =["sun","earth","moon"], 
                  time:tuple = (1980,1,1),
-                 G: float = 6.674*(10**-11),
+                 G: float = 6.674e-11 * (31553280**2) / (1.496e11**3),#with kg,UA,yr
                 ) -> System:
 
     ts = load.timescale()
@@ -12,8 +12,9 @@ def Solar_system(name =["sun","earth","moon"],
     Planets = load('de421.bsp')
     Body = [Planets[k] for k in name]
     positions=np.array([body.at(t).position.m for body in Body])
-    velocities=np.array([body.at(t).velocity.km_per_s/1000 for body in Body])
-
+    velocities=np.array([body.at(t).velocity.km_per_s for body in Body])
+    positions = positions / 1.496e11                       # UA
+    velocities = velocities *  31557600 / 1.496e8   #UA/yr
     MASSES = {
     "sun":     1.988e30,
     "earth":   5.972e24,
