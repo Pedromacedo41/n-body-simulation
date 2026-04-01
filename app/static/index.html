@@ -3,11 +3,7 @@
 <head>
   <meta charset="utf-8" />
 
-  <!-- =====================================================
-       STYLES
-  ====================================================== -->
   <style>
-    /* ================= Base ================= */
     body {
       margin: 0;
       overflow: hidden;
@@ -18,7 +14,6 @@
       box-sizing: border-box;
     }
 
-    /* ================= Sidebar toggle ================= */
     .sidebar-toggle {
       position: fixed;
       top: 12px;
@@ -33,7 +28,6 @@
       font-size: 13px;
     }
 
-    /* ================= Sidebar ================= */
     .sidebar {
       position: fixed;
       top: 0;
@@ -41,15 +35,12 @@
       width: 320px;
       height: 100vh;
       padding: 14px;
-
       background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(1px);
       color: #c8facc;
-
       display: flex;
       flex-direction: column;
       gap: 14px;
-
       overflow-y: auto;
       transition: transform 0.25s ease;
       z-index: 1000;
@@ -59,7 +50,6 @@
       transform: translateX(100%);
     }
 
-    /* ================= Sections ================= */
     .section {
       border-top: 1px solid rgba(255,255,255,0.15);
       padding-top: 10px;
@@ -77,7 +67,6 @@
       opacity: 0.85;
     }
 
-    /* ================= Controls ================= */
     .control-row {
       display: flex;
       justify-content: space-between;
@@ -108,14 +97,14 @@
       text-align: center;
     }
 
-    /* ================= Inputs ================= */
     input[type="range"],
     input[type="checkbox"] {
       accent-color: #00d47a;
     }
 
     input,
-    select {
+    select,
+    .duration-input {
       background: rgba(0,0,0,0.35);
       border: 1px solid rgba(255,255,255,0.25);
       border-radius: 4px;
@@ -124,7 +113,6 @@
       font-size: 11px;
     }
 
-    /* ================= Buttons ================= */
     button {
       background: rgba(0, 180, 90, 0.6);
       border: 1px solid rgba(0, 255, 150, 0.6);
@@ -139,7 +127,6 @@
       background: rgba(0, 220, 120, 0.8);
     }
 
-    /* ================= Accordion ================= */
     .accordion {
       border: 1px solid rgba(255,255,255,0.15);
       border-radius: 6px;
@@ -165,7 +152,6 @@
       display: block;
     }
 
-    /* ================= Control grid ================= */
     .control-grid {
       display: grid;
       grid-template-columns: 90px 1fr;
@@ -187,16 +173,24 @@
     .duration-input {
       width: 54px;
     }
+
+    .body-label {
+      position: absolute;
+      color: white;
+      font-size: 11px;
+      pointer-events: none;
+      text-shadow: 1px 1px 1px black;
+      z-index: 2000;
+      transform: translate(-50%, -16px);
+    }
   </style>
 </head>
 
 <body>
-
 <button id="toggle-sidebar" class="sidebar-toggle">☰</button>
 
 <div id="sidebar" class="sidebar">
 
-  <!-- PLAYER -->
   <div class="section">
     <div class="section-title">Player</div>
 
@@ -218,7 +212,6 @@
     </div>
   </div>
 
-  <!-- CAMERA -->
   <div class="section">
     <div class="section-title">Camera</div>
     <div class="control-row center">
@@ -227,7 +220,6 @@
     </div>
   </div>
 
-  <!-- DISPLAY -->
   <div class="section">
     <div class="section-title">Display</div>
 
@@ -252,7 +244,6 @@
     </div>
   </div>
 
-  <!-- BODIES -->
   <div class="section">
     <div class="section-title">Bodies</div>
     <div id="bodies-panel"></div>
@@ -260,9 +251,6 @@
 
 </div>
 
-<!-- =====================================================
-     SCRIPTS
-===================================================== -->
 <script type="importmap">
 {
   "imports": {
@@ -275,39 +263,32 @@
 import * as THREE from "three";
 import { OrbitControls } from "https://unpkg.com/three@0.159.0/examples/jsm/controls/OrbitControls.js";
 
-/* =====================================================
-   UI
-===================================================== */
+/* UI */
 const sidebar = document.getElementById("sidebar");
-document.getElementById("toggle-sidebar").onclick =
-  () => sidebar.classList.toggle("hidden");
+document.getElementById("toggle-sidebar").onclick = () => sidebar.classList.toggle("hidden");
 
-/* =====================================================
-   DATA
-===================================================== */
+/* DATA */
 const REPLAY = window.REPLAY_DATA;
 const totalFrames = REPLAY.positions.length;
+const fps = 60;
 
-/* =====================================================
-   BODY DISPLAY CONFIG
-===================================================== */
+/* BODY DISPLAY CONFIG */
 const bodyDisplayConfig = REPLAY.positions[0].map((_, i) => ({
   id: i,
   name: `Body ${i + 1}`,
   visible: true,
-  showLabel: false,
+  showLabel: true,
+  label: `Body ${i + 1}`,
   color: "#00d47a",
   renderMode: "sphere",
   trajectory: {
     enabled: false,
     mode: "persistent",
-    duration: 5.0
+    duration: 5.0 // secondes
   }
 }));
 
-/* =====================================================
-   BODIES PANEL UI
-===================================================== */
+/* BODIES PANEL UI */
 const bodiesPanel = document.getElementById("bodies-panel");
 
 bodyDisplayConfig.forEach((cfg, i) => {
@@ -324,10 +305,10 @@ bodyDisplayConfig.forEach((cfg, i) => {
       <div class="control-grid">
 
         <div class="control-name">Show label</div>
-        <input type="checkbox" data-body="${i}" data-field="showLabel" />
+        <input type="checkbox" data-body="${i}" data-field="showLabel" checked/>
 
         <div class="control-name">Label</div>
-        <input type="text" value="${cfg.name}" data-body="${i}" data-field="label"/>
+        <input type="text" value="${cfg.label}" data-body="${i}" data-field="label"/>
 
         <div class="control-name">Color</div>
         <input type="color" value="${cfg.color}" data-body="${i}" data-field="color"/>
@@ -365,9 +346,7 @@ document.querySelectorAll(".accordion-header").forEach(h =>
   h.onclick = () => h.parentElement.classList.toggle("open")
 );
 
-/* =====================================================
-   INPUT DISPATCHER
-===================================================== */
+/* INPUT DISPATCHER */
 document.addEventListener("input", (e) => {
   const i = e.target.dataset.body;
   const field = e.target.dataset.field;
@@ -376,27 +355,24 @@ document.addEventListener("input", (e) => {
   const cfg = bodyDisplayConfig[i];
 
   if (field === "label") {
-    e.target.closest(".accordion")
-      .querySelector(".accordion-title").textContent =
-        e.target.value || `Body ${+i + 1}`;
+    const text = e.target.value;
+    cfg.labelElement.textContent = text || `Body ${+i + 1}`;
+    e.target.closest(".accordion").querySelector(".accordion-title").textContent = text || `Body ${+i + 1}`;
   }
 
   const path = field.split(".");
   let obj = cfg;
   for (let j = 0; j < path.length - 1; j++) obj = obj[path[j]];
-
   obj[path.at(-1)] =
     e.target.type === "checkbox" ? e.target.checked :
     e.target.type === "number" ? Number(e.target.value) :
     e.target.value;
 });
 
-/* =====================================================
-   THREE.JS SETUP
-===================================================== */
+/* THREE.JS SETUP */
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 100);
-camera.position.set(3,3,3);
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100);
+camera.position.set(3, 3, 3);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 const W = document.documentElement.clientWidth || 800;
@@ -409,15 +385,13 @@ document.body.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
-/* Helpers */
+/* HELPERS */
 const axesHelper = new THREE.AxesHelper(1.5);
 scene.add(axesHelper);
 document.getElementById("toggle-axes").onchange =
   e => axesHelper.visible = e.target.checked;
 
-/* =====================================================
-   GRID
-===================================================== */
+/* GRID */
 let gridHelper = null;
 
 function createGrid(size, div) {
@@ -438,22 +412,47 @@ gridSize.oninput = gridDivs.oninput =
 document.getElementById("toggle-grid").onchange =
   e => gridHelper.visible = e.target.checked;
 
-/* =====================================================
-   BODIES
-===================================================== */
+/* BODIES + TRAJECTORIES */
 const bodies = [];
-const geom = new THREE.SphereGeometry(0.05, 16, 16);
-const mat = new THREE.MeshBasicMaterial({ color: 0x00d47a });
+const bodiesTrajectories = [];
+const trajectoryGeoms = [];
 
-REPLAY.positions[0].forEach(() => {
-  const m = new THREE.Mesh(geom, mat);
-  scene.add(m);
-  bodies.push(m);
+const geom = new THREE.SphereGeometry(0.05, 16, 16);
+
+REPLAY.positions[0].forEach((_, i) => {
+  const cfg = bodyDisplayConfig[i];
+  const color = new THREE.Color(cfg.color);
+
+  // 1) SPHERE
+  const mat = new THREE.MeshBasicMaterial({ color });
+  const mesh = new THREE.Mesh(geom, mat);
+  scene.add(mesh);
+  bodies.push(mesh);
+
+  // 2) TRAJECTORY LINE
+  const pos = new Float32Array(totalFrames * 3);
+  pos.fill(0);
+  const trajGeom = new THREE.BufferGeometry();
+  trajGeom.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+
+  const lineMat = new THREE.LineBasicMaterial({ color });
+  const line = new THREE.Line(trajGeom, lineMat);
+  scene.add(line);
+
+  bodiesTrajectories.push(line);
+  trajectoryGeoms.push(trajGeom);
+
+  // 3) 2D LABEL (DOM)
+  const labelEl = document.createElement("div");
+  labelEl.className = "body-label";
+  labelEl.style.display = cfg.showLabel ? "block" : "none";
+  labelEl.textContent = cfg.label || `Body ${i + 1}`;
+  document.body.appendChild(labelEl);
+
+  cfg.labelElement = labelEl;
 });
 
-/* =====================================================
-   PLAYER
-===================================================== */
+/* PLAYER */
 let frame = 0, frameFloat = 0, speed = 1, playing = false;
 
 const timeline = document.getElementById("timeline");
@@ -472,47 +471,114 @@ document.getElementById("speed-slider").oninput = e => {
   document.getElementById("speed-label").textContent = `×${speed.toFixed(1)}`;
 };
 
-function updateFrame(f) {
-  bodies.forEach((b,i) => {
-    const [x,y,z] = REPLAY.positions[f][i];
-    b.position.set(x,y,z);
-  });
-  document.getElementById("time-label").textContent = `Frame ${f}`;
-}
+/* TRAJECTORY HELPER */
+function updateTrajectory(i, f, cfg) {
+  const pos = trajectoryGeoms[i].attributes.position.array;
+  const line = bodiesTrajectories[i];
+  const lineMat = line.material;
 
-/* =====================================================
-   CAMERA BUTTONS
-===================================================== */
-document.getElementById("reset-camera").onclick = () => {
-  camera.position.set(3,3,3);
-  controls.target.set(0,0,0);
-};
-
-document.getElementById("fit-camera").onclick = () => {
-  camera.position.set(2,2,2);
-  controls.target.set(0,0,0);
-};
-
-/* =====================================================
-   LOOP
-===================================================== */
-function animate() {
-  requestAnimationFrame(animate);
-
-  if (playing) {
-    frameFloat += speed;
-    frame = Math.min(Math.floor(frameFloat), totalFrames - 1);
-    timeline.value = frame;
-    updateFrame(frame);
-    if (frame === totalFrames - 1) playing = false;
+  // appliquer la couleur de la config
+  if (lineMat.color.getStyle() !== cfg.color) {
+    lineMat.color.set(cfg.color);
   }
 
-  controls.update();
-  renderer.render(scene, camera);
+  if (!cfg.trajectory.enabled) {
+    line.visible = false;
+    return;
+  }
+
+  let nFrames = 0;
+  const maxFrames = Math.min(f + 1, totalFrames);
+
+  // MODE :
+  if (cfg.trajectory.mode === "persistent") {
+    // trajectoire complète depuis le début
+    nFrames = maxFrames;
+  } else {
+    // dernier intervalle de temps (duration en secondes)
+    const durationFrames = Math.floor(cfg.trajectory.duration * fps);
+    nFrames = Math.min(maxFrames, durationFrames);
+  }
+
+  const offset = Math.max(0, maxFrames - nFrames);
+
+  for (let ff = 0; ff < nFrames; ff++) {
+    const absFrame = offset + ff;
+    const j = ff * 3;
+    const [x, y, z] = REPLAY.positions[absFrame][i];
+    pos[j]     = x;
+    pos[j + 1] = y;
+    pos[j + 2] = z;
+  }
+
+  trajectoryGeoms[i].attributes.position.needsUpdate = true;
+  line.visible = true;
 }
 
-animate();
-</script>
+/* UPDATE FRAME */
+function updateFrame(f) {
+  // 1) Mise à jour des corps (sphères + labels)
+  bodies.forEach((b, i) => {
+    const cfg = bodyDisplayConfig[i];
+    const [x, y, z] = REPLAY.positions[f][i];
+    b.position.set(x, y, z);
 
+    // appliquer la couleur à la sphère
+    if (b.material.color.getStyle() !== cfg.color) {
+      b.material.color.set(cfg.color);
+    }
+
+    // mettre à jour le label 2D
+    const labelEl = cfg.labelElement;
+    if (labelEl) {
+      labelEl.style.display = cfg.showLabel ? "block" : "none";
+      if (cfg.showLabel) {
+        const v = b.position.clone();
+        v.project(camera);
+        const xPx = (v.x + 1) * W / 2;
+        const yPx = (1 - v.y) * H / 2;
+        labelEl.style.left = `${xPx}px`;
+        labelEl.style.top  = `${yPx}px`;
+      }
+    }
+  });
+
+  // 2) Mise à jour des trajectoires (une seule fois)
+  bodiesTrajectories.forEach((_, i) => {
+    const cfg = bodyDisplayConfig[i];
+    updateTrajectory(i, f, cfg);
+  });
+
+  document.getElementById("time-label").textContent = `Frame ${f}`;
+}
+  /* CAMERA BUTTONS */
+  document.getElementById("reset-camera").onclick = () => {
+    camera.position.set(3, 3, 3);
+    controls.target.set(0, 0, 0);
+  };
+
+  document.getElementById("fit-camera").onclick = () => {
+    camera.position.set(2, 2, 2);
+    controls.target.set(0, 0, 0);
+  };
+
+  /* LOOP */
+  function animate() {
+    requestAnimationFrame(animate);
+
+    if (playing) {
+      frameFloat += speed;
+      frame = Math.min(Math.floor(frameFloat), totalFrames - 1);
+      timeline.value = frame;
+      updateFrame(frame);
+      if (frame === totalFrames - 1) playing = false;
+    }
+
+    controls.update();
+    renderer.render(scene, camera);
+  }
+
+  animate();
+</script>
 </body>
-</html>
+</html> 
