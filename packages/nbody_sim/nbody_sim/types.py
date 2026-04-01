@@ -9,7 +9,7 @@ class System:
     positions: Array      # (N, 3)
     velocities: Array     # (N, 3)
     masses: Array         # (N,)
-    G: float = 1.0
+    G: float = 6.674e-11 * (31557600**2) / (1.496e11**3)
     @property
     def state(self): # Use state for vectorial operations
         return np.stack([ self.positions,self.velocities], axis=0)

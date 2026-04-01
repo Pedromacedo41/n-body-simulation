@@ -5,7 +5,7 @@ def gravitational_forces(system: System) -> np.ndarray:
     pos = system.positions
     m = system.masses
     n = len(m)
-
+   
     forces = np.zeros_like(pos)
 
     for i in range(n):
@@ -17,5 +17,4 @@ def gravitational_forces(system: System) -> np.ndarray:
             (m[mask, None] * r[mask]) / dist[mask, None]**3,
             axis=0
         )
-
     return forces #Return acceleration : a=f/m
