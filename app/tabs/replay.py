@@ -67,6 +67,6 @@ def replay_tab():
             replay.meta.__dict__.items(),
             columns=["Field", "Value"]
         )
-
+        meta_df["Value"] = meta_df["Value"].astype(str)
         st.table(meta_df)
 
