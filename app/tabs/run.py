@@ -66,6 +66,7 @@ def run_tab():
         max_value=10.0,
         value=0.001,
         key="dt",
+        format="%.4f",
     )
 
     st.number_input(
