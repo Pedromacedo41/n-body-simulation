@@ -9,7 +9,15 @@ class System:
     positions: Array      # (N, 3)
     velocities: Array     # (N, 3)
     masses: Array         # (N,)
-    G: float = 1.0
+    G: float = 6.674e-11 * (31557600**2) / (1.495978707e11**3)
+    @property
+    def state(self): # Use state for vectorial operations
+        return np.stack([ self.positions,self.velocities], axis=0)
+
+    @state.setter
+    def state(self, value): #update velocities and position according to the value of state
+        self.velocities = value[1]
+        self.positions  = value[0]
 
     def copy(self) -> "System":
         return System(
@@ -26,6 +34,8 @@ class ReplayMeta:
     steps: int
     integrator: str
     preset: str
+
+
 
 @dataclass
 class ReplayData:
