@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+
+<style>
+body { margin: 0; overflow: hidden; font-family: system-ui, sans-serif; }
+*, *::before, *::after { box-sizing: border-box; }
+
+.sidebar-toggle {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1001;
+  background: rgba(0, 180, 90, 0.7);
+  border: 1px solid rgba(0, 255, 150, 0.6);
+  color: #eafff2;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 320px;
+  height: 100vh;
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(1px);
+  color: #c8facc;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  transition: transform 0.25s ease;
+  z-index: 1000;
+}
+
+.sidebar.hidden {
+  transform: translateX(100%);
+}
+
+.section {
+  border-top: 1px solid rgba(255,255,255,0.15);
+  padding-top: 10px;
+}
+
+.section:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.control-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.control-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.control-label {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.control-value {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+input, select, button {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 4px;
+  padding: 4px 6px;
+  color: #eafff2;
+  font-size: 11px;
+}
+
+button {
+  background: rgba(0, 180, 90, 0.6);
+  cursor: pointer;
+}
+
+button:hover {
+  background: rgba(0, 220, 120, 0.8);
+}
+
+.body-label {
+  position: absolute;
+  color: white;
+  font-size: 11px;
+  pointer-events: none;
+  text-shadow: 1px 1px 1px black;
+  transform: translate(-50%, -16px);
+}
+</style>
+</head>
+
+<body>
+
+<button id="toggle-sidebar" class="sidebar-toggle">☰</button>
+
+<div id="sidebar" class="sidebar">
+
+  <div class="section">
+    <div class="section-title">Player</div>
+
+    <div class="control-row">
+      <button id="play">Play</button>
+      <button id="pause">Pause</button>
+    </div>
+
+    <div class="control-column">
+      <span class="control-label">Timeline</span>
+      <input type="range" id="timeline" />
+      <span id="time-label" class="control-value"></span>
+    </div>
+
+    <div class="control-column">
+      <span class="control-label">Speed</span>
+      <input type="range" id="speed-slider" min="0.1" max="5" step="0.1" value="1" />
+      <span id="speed-label" class="control-value"></span>
+    </div>
+  </div>
+
+</div>
+
+<div style="position:fixed; top:12px; left:12px; z-index:2000;">
+  <input type="file" id="file-input" />
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.159.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.159.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+/* =========================
+   GLOBAL STATE
+========================= */
+let scene, camera, renderer, controls;
+let bodies = [];
+let bodiesTrajectories = [];
+let trajectoryGeoms = [];
+let bodyDisplayConfig = [];
+let REPLAY;
+let totalFrames = 0;
+let fps = 60;
+
+let frame = 0;
+let frameFloat = 0;
+let speed = 1;
+let playing = false;
+
+/* =========================
+   INIT VIEWER
+========================= */
+function initViewer(replay) {
+
+  REPLAY = replay?.data;
+
+  if (!REPLAY?.positions) {
+    alert("Invalid replay");
+    return;
+  }
+
+  totalFrames = REPLAY.positions.length;
+
+  bodies.length = 0;
+  bodiesTrajectories.length = 0;
+  trajectoryGeoms.length = 0;
+  bodyDisplayConfig.length = 0;
+
+  /* CONFIG */
+  bodyDisplayConfig = REPLAY.positions[0].map((_, i) => ({
+    id: i,
+    name: `Body ${i + 1}`,
+    visible: true,
+    showLabel: true,
+    label: `Body ${i + 1}`,
+    color: "#00d47a",
+    trajectory: { enabled: false, mode: "persistent", duration: 5 }
+  }));
+
+  /* SCENE */
+  if (!scene) {
+    scene = new THREE.Scene();
+
+    camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100);
+    camera.position.set(3, 3, 3);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    controls = new OrbitControls(camera, renderer.domElement);
+
+    window.addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  }
+
+  /* BODIES */
+  const geom = new THREE.SphereGeometry(0.05, 16, 16);
+
+  REPLAY.positions[0].forEach((_, i) => {
+
+    const cfg = bodyDisplayConfig[i];
+    const color = new THREE.Color(cfg.color);
+
+    const mesh = new THREE.Mesh(
+      geom,
+      new THREE.MeshBasicMaterial({ color })
+    );
+
+    scene.add(mesh);
+    bodies.push(mesh);
+
+    const pos = new Float32Array(totalFrames * 3);
+    const geomLine = new THREE.BufferGeometry();
+    geomLine.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+
+    const line = new THREE.Line(
+      geomLine,
+      new THREE.LineBasicMaterial({ color })
+    );
+
+    scene.add(line);
+
+    bodiesTrajectories.push(line);
+    trajectoryGeoms.push(geomLine);
+
+    const label = document.createElement("div");
+    label.className = "body-label";
+    document.body.appendChild(label);
+
+    cfg.labelElement = label;
+  });
+
+  /* CONTROLS */
+  document.getElementById("play").onclick = () => playing = true;
+  document.getElementById("pause").onclick = () => playing = false;
+
+  const timeline = document.getElementById("timeline");
+  timeline.max = totalFrames - 1;
+
+  timeline.oninput = () => {
+    frame = frameFloat = +timeline.value;
+    updateFrame(frame);
+  };
+
+  document.getElementById("speed-slider").oninput = e => {
+    speed = +e.target.value;
+    document.getElementById("speed-label").textContent = `×${speed.toFixed(1)}`;
+  };
+
+  animate();
+}
+
+/* =========================
+   UPDATE FRAME
+========================= */
+function updateFrame(f) {
+
+  bodies.forEach((b, i) => {
+    const cfg = bodyDisplayConfig[i];
+    const [x, y, z] = REPLAY.positions[f][i];
+
+    b.position.set(x, y, z);
+
+    const label = cfg.labelElement;
+    if (label) {
+      const v = b.position.clone().project(camera);
+      label.style.left = `${(v.x + 1) * innerWidth / 2}px`;
+      label.style.top = `${(1 - v.y) * innerHeight / 2}px`;
+    }
+  });
+
+  document.getElementById("time-label").textContent = `Frame ${f}`;
+}
+
+/* =========================
+   LOOP
+========================= */
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (playing) {
+    frameFloat += speed;
+    frame = Math.min(Math.floor(frameFloat), totalFrames - 1);
+    updateFrame(frame);
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+/* =========================
+   FILE LOAD
+========================= */
+document.getElementById("file-input").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  const text = await file.text();
+  initViewer(JSON.parse(text));
+});
+
+/* =========================
+   SIDEBAR TOGGLE
+========================= */
+document.getElementById("toggle-sidebar").onclick = () => {
+  document.getElementById("sidebar").classList.toggle("hidden");
+};
+
+</script>
+
+</body>
+</html>
