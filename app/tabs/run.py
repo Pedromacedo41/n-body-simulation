@@ -62,7 +62,7 @@ def run_tab():
 
     st.number_input(
         "Time step (dt) in years",
-        min_value=0.0001,
+        min_value=0.00001,
         max_value=10.0,
         value=0.001,
         key="dt",

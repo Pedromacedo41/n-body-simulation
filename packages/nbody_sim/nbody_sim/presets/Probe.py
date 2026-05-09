@@ -90,11 +90,13 @@ def Cassini() -> System:
 
 def Messenger() -> System:
     return Probe(Departure_time["Messenger"],
-    Initial_state["Messenger"])
+    Initial_state["Messenger"],
+    name = ["sun", "earth","venus", "mars", "jupiter"])
 
 def Voyager1() -> System:
     return Probe(Departure_time["Voyager1"],
     Initial_state["Voyager1"],
+    probe_mass=721.9,
     name = ["sun", "earth","venus", "mars", "jupiter", "saturn", "uranus", "neptune"])
 
 def Voyager2() -> System:
