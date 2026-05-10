@@ -2,7 +2,7 @@ import json
 import streamlit as st
 import pandas as pd
 from pathlib import Path
-
+from nbody_sim.data.voyager1_trajectory import VOYAGER1_POSITIONS
 from nbody_sim.io.replay_store import list_replays, load_replay_file, delete_replay
 
 def on_replay_change():
@@ -19,9 +19,10 @@ def render_threejs_viewer(replay):
     # Aucun dt disponible — on utilise juste les indices de frames
         times = list(range(replay.meta.steps))
     payload = {
-    "positions": replay.data.positions.tolist(),
-    "times": times,
-    "body_configs": replay.data.body_display, 
+        "positions": replay.data.positions.tolist(),
+        "times": times,
+        "body_configs": replay.data.body_display,
+        "reference_trajectory": VOYAGER1_POSITIONS.tolist() if replay.meta.preset == "Voyager1" else None,
     }
 
     html = html.replace(

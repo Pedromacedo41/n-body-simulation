@@ -46,9 +46,10 @@ class ReplayMeta:
 
 @dataclass
 class ReplayData:
-    positions: Array  # (T, N, 3)
-    times: Array = None  # (T,) — None pour anciens replays
+    positions: Array
+    times: Array = None
     body_display: list = None
+    velocities: Array = None
     
 @dataclass
 class Replay:

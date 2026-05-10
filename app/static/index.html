@@ -439,7 +439,9 @@ REPLAY.positions[0].forEach((_, i) => {
   const cfg = bodyDisplayConfig[i];
   const color = new THREE.Color(cfg.color);
 
-  // 1) SPHERE
+  // 1) SPHERE — taille selon body_configs
+  const size = cfg.size || 0.05;
+  const geom = new THREE.SphereGeometry(size, 16, 16);
   const mat = new THREE.MeshBasicMaterial({ color });
   const mesh = new THREE.Mesh(geom, mat);
   scene.add(mesh);
@@ -469,8 +471,23 @@ REPLAY.positions[0].forEach((_, i) => {
 
   cfg.labelElement = labelEl;
 });
+// TRAJECTOIRE DE RÉFÉRENCE (points Horizons)
+if (REPLAY.reference_trajectory) {
+    const refGeom = new THREE.BufferGeometry();
+    const refPositions = new Float32Array(REPLAY.reference_trajectory.flat());
+    refGeom.setAttribute('position', new THREE.BufferAttribute(refPositions, 3));
 
-/* CAMERA TARGET */  // ← ICI
+    const refMat = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.03,
+        transparent: true,
+        opacity: 0.5,
+    });
+
+    const refPoints = new THREE.Points(refGeom, refMat);
+    scene.add(refPoints);
+}
+/* CAMERA TARGET */  // 
 const cameraTargetSelect = document.getElementById("camera-target");
 let cameraTargetIndex = -1;
 

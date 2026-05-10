@@ -4,6 +4,7 @@ from tabs.replay import replay_tab
 
 st.set_page_config(layout="wide", page_title="N-body Simulator")
 
+#Style and color backgrounds for streamlit graphic interface
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');

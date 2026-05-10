@@ -4,6 +4,9 @@ from nbody_sim.integrators import get_integrator, list_integrators
 from nbody_sim.io.replay import save_replay
 from nbody_sim.presets import get_preset, list_presets
 from nbody_sim.types import Replay, ReplayMeta, ReplayData
+from nbody_sim.data.voyager1_trajectory import VOYAGER1_TRAJECTORY
+from nbody_sim.presets.Probe import VOYAGER1_CONFIGS
+from datetime import datetime
 import numpy as np
 import streamlit as st
 
@@ -14,16 +17,23 @@ def run_simulation():
     step_mode = st.session_state.step_mode
 
     preset_fn = get_preset(st.session_state.preset)
-    system = preset_fn()
+    if st.session_state.preset == "Voyager1":
+        system = preset_fn(
+            departure_jd=st.session_state.get("voyager1_jd"),
+            config=st.session_state.get("voyager1_config", "Système solaire complet")
+        )
+    else:
+        system = preset_fn()
     integrator = get_integrator(st.session_state.integrator)
     simulator = Simulator(system.copy(), integrator)
 
     positions = []
+    velocities = []
     times = []
     progress = st.progress(0)
     status = st.empty()
 
-    if step_mode == "Adaptatif":
+    if step_mode == "Adaptive":
         iterator = simulator.run_adaptive(
             t_total=duration,
             alpha=st.session_state.get("alpha", 0.01),
@@ -32,6 +42,7 @@ def run_simulation():
         for i, (t, state) in enumerate(iterator):
             if i % st.session_state.save_every == 0:
                 positions.append(state.positions.copy())
+                velocities.append(state.velocities.copy())
                 times.append(t)
             progress.progress(min(t / duration, 1.0))
             status.text(f"t={t:.4f} / {duration:.2f} ans")
@@ -42,18 +53,17 @@ def run_simulation():
         for step, state in simulator.run_iter(dt=dt, steps=steps):
             if step % st.session_state.save_every == 0:
                 positions.append(state.positions.copy())
+                velocities.append(state.velocities.copy())
                 times.append(step * dt)
             progress.progress((step + 1) / steps)
             status.text(f"step {step+1}/{steps}")
 
     progress.empty()
     status.empty()
-    save_replay_from_positions(positions, times, system.body_display)
+    save_replay_from_positions(positions, times, system.body_display, velocities)
 
 
-def save_replay_from_positions(positions: list, times: list, body_display: list = None):
-    step_mode = st.session_state.step_mode
-
+def save_replay_from_positions(positions: list, times: list, body_display: list = None, velocities: list = None):
     replay = Replay(
         meta=ReplayMeta(
             name=st.session_state.replay_name,
@@ -70,11 +80,10 @@ def save_replay_from_positions(positions: list, times: list, body_display: list 
             positions=np.array(positions),
             times=np.array(times),
             body_display=body_display,
+            velocities=np.array(velocities) if velocities else None,
         )
     )
     save_replay(Path("data/replays") / f"{replay.meta.name}.json", replay)
-
-
 
 def run_tab():
     st.subheader("Simulation parameters")
@@ -85,7 +94,31 @@ def run_tab():
     integrator_names = list(list_integrators().keys())
 
     st.selectbox("Preset", presets, key="preset")
+    if st.session_state.get("preset") == "Voyager1":
+        st.selectbox(
+            "Configuration des corps",
+            list(VOYAGER1_CONFIGS.keys()),
+            key="voyager1_config"
+        )
 
+        # Sélecteur de date
+        date_options = {}
+        for jd, data in VOYAGER1_TRAJECTORY.items():
+            raw = data["date"][:16]
+            try:
+                dt = datetime.strptime(raw, "%Y-%b-%d %H:%M")
+                label = dt.strftime("%Y:%m:%d %Hh%M")
+            except:
+                label = raw
+            date_options[label] = jd
+
+        selected_date = st.selectbox(
+            "Date de départ",
+            list(date_options.keys()),
+            index=0,
+            key="voyager1_date"
+        )
+        st.session_state["voyager1_jd"] = date_options[selected_date]
     st.number_input("Duration (years)", min_value=0.01, max_value=1e6, value=5.0, key="duration")
 
     st.selectbox("Integrator", integrator_names, key="integrator")
