@@ -14,6 +14,19 @@ BODY_MAP = {
     "neptune": "Neptune Barycenter",
 }
 
+BODY_DISPLAY = {
+    "sun":     {"name": "Soleil",  "color": "#FFD700", "size": 0.08},
+    "mercury": {"name": "Mercure", "color": "#B5B5B5", "size": 0.03},
+    "venus":   {"name": "Vénus",   "color": "#E8C98A", "size": 0.04},
+    "earth":   {"name": "Terre",   "color": "#4B9CD3", "size": 0.04},
+    "mars":    {"name": "Mars",    "color": "#C1440E", "size": 0.035},
+    "jupiter": {"name": "Jupiter", "color": "#C88B3A", "size": 0.07},
+    "saturn":  {"name": "Saturne", "color": "#E4D191", "size": 0.06},
+    "uranus":  {"name": "Uranus",  "color": "#7DE8E8", "size": 0.05},
+    "neptune": {"name": "Neptune", "color": "#4B70DD", "size": 0.05},
+    "probe":   {"name": "Sonde",   "color": "#FF4444", "size": 0.02},
+}
+
 MASSES = {
     "sun": 1.988e30,
     "mercury": 3.301e23,
@@ -50,4 +63,5 @@ def Solar_system(
         velocities=velocities,
         masses=masses,
         G=G,
+        body_display=[BODY_DISPLAY[n] for n in names],
     )

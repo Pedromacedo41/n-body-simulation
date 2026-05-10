@@ -48,10 +48,10 @@ def run_simulation():
 
     progress.empty()
     status.empty()
-    save_replay_from_positions(positions, times)
+    save_replay_from_positions(positions, times, system.body_display)
 
 
-def save_replay_from_positions(positions: list, times: list):
+def save_replay_from_positions(positions: list, times: list, body_display: list = None):
     step_mode = st.session_state.step_mode
 
     replay = Replay(
@@ -69,6 +69,7 @@ def save_replay_from_positions(positions: list, times: list):
         data=ReplayData(
             positions=np.array(positions),
             times=np.array(times),
+            body_display=body_display,
         )
     )
     save_replay(Path("data/replays") / f"{replay.meta.name}.json", replay)

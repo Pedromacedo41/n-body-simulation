@@ -2,6 +2,8 @@ import numpy as np
 from nbody_sim.types import System
 from skyfield.api import load
 from skyfield.framelib import ecliptic_J2000_frame
+from nbody_sim.presets.Solar_system import BODY_DISPLAY
+
 BODY_MAP = {
     "sun": "Sun",
     "mercury": "Mercury Barycenter",
@@ -82,16 +84,10 @@ def Probe(
         velocities=velocities,
         masses=masses,
         G=G,
+        body_display=[BODY_DISPLAY.get(n, BODY_DISPLAY["probe"]) for n in names] + [{"name": "Voyager 1", "color": "#FF4444", "size": 0.02}],
     )
 
-def Cassini() -> System:
-    return Probe(Departure_time["Cassini"],
-    Initial_state["Cassini"]) 
 
-def Messenger() -> System:
-    return Probe(Departure_time["Messenger"],
-    Initial_state["Messenger"],
-    name = ["sun", "earth","venus", "mars", "jupiter"])
 
 def Voyager1() -> System:
     return Probe(Departure_time["Voyager1"],
@@ -99,18 +95,6 @@ def Voyager1() -> System:
     probe_mass=721.9,
     name = ["sun", "earth","venus", "mars", "jupiter", "saturn", "uranus", "neptune"])
 
-def Voyager2() -> System:
-    return Probe(Departure_time["Voyager2"],
-    Initial_state["Voyager2"],
-    name = ["sun", "earth", "mars", "venus", "jupiter", "saturn", "uranus", "neptune"])
 
-def Rosetta() -> System:
-    return Probe(Departure_time["Rosetta"],
-    Initial_state["Rosetta"])
-
-def New_Horizon() -> System:
-    return Probe(Departure_time["New_Horizon"],
-    Initial_state["New_Horizon"],
-    name = ["sun", "earth","venus", "mars", "jupiter", "saturn", "uranus", "neptune"])
 
 

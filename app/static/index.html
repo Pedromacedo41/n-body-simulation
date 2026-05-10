@@ -219,6 +219,12 @@
       <button id="reset-camera">Reset view</button>
       <button id="fit-camera">Center & zoom</button>
     </div>
+    <div class="control-column">
+      <span class="control-label">Suivre</span>
+      <select id="camera-target">
+        <option value="-1">Libre</option>
+      </select>
+    </div>
   </div>
 
   <div class="section">
@@ -274,20 +280,29 @@ const totalFrames = REPLAY.positions.length;
 const fps = 60;
 
 /* BODY DISPLAY CONFIG */
-const bodyDisplayConfig = REPLAY.positions[0].map((_, i) => ({
-  id: i,
-  name: `Body ${i + 1}`,
-  visible: true,
-  showLabel: true,
-  label: `Body ${i + 1}`,
-  color: "#00d47a",
-  renderMode: "sphere",
-  trajectory: {
-    enabled: true,
-    mode: "persistent",
-    duration: 5.0 // secondes
-  }
-}));
+const bodyDisplayConfig = REPLAY.body_configs
+    ? REPLAY.body_configs.map((cfg, i) => ({
+        id: i,
+        name: cfg.name,
+        label: cfg.name,
+        color: cfg.color,
+        size: cfg.size || 0.05,
+        visible: true,
+        showLabel: true,
+        renderMode: "sphere",
+        trajectory: { enabled: true, mode: "persistent", duration: 5.0 }
+      }))
+    : REPLAY.positions[0].map((_, i) => ({
+        id: i,
+        name: `Body ${i + 1}`,
+        label: `Body ${i + 1}`,
+        color: "#00d47a",
+        size: 0.05,
+        visible: true,
+        showLabel: true,
+        renderMode: "sphere",
+        trajectory: { enabled: true, mode: "persistent", duration: 5.0 }
+      }));
 
 /* BODIES PANEL UI */
 const bodiesPanel = document.getElementById("bodies-panel");
@@ -436,7 +451,9 @@ REPLAY.positions[0].forEach((_, i) => {
   const trajGeom = new THREE.BufferGeometry();
   trajGeom.setAttribute("position", new THREE.BufferAttribute(pos, 3));
 
-  const lineMat = new THREE.LineBasicMaterial({ color });
+  const lineMat = REPLAY.body_configs
+    ? new THREE.LineDashedMaterial({ color, dashSize: 0.05, gapSize: 0.03 })
+    : new THREE.LineBasicMaterial({ color });
   const line = new THREE.Line(trajGeom, lineMat);
   scene.add(line);
 
@@ -453,6 +470,26 @@ REPLAY.positions[0].forEach((_, i) => {
   cfg.labelElement = labelEl;
 });
 
+/* CAMERA TARGET */  // ← ICI
+const cameraTargetSelect = document.getElementById("camera-target");
+let cameraTargetIndex = -1;
+
+bodyDisplayConfig.forEach((cfg, i) => {
+  const option = document.createElement("option");
+  option.value = i;
+  option.textContent = cfg.name;
+  cameraTargetSelect.appendChild(option);
+});
+
+if (REPLAY.body_configs) {
+  cameraTargetIndex = bodyDisplayConfig.length - 1;  // sonde par défaut
+  cameraTargetSelect.value = cameraTargetIndex;
+}
+
+cameraTargetSelect.onchange = e => {
+  cameraTargetIndex = +e.target.value;
+  if (cameraTargetIndex === -1) controls.target.set(0, 0, 0);
+};
 /* PLAYER */
 let frame = 0, frameFloat = 0, timeFloat = 0, speed = 1, playing = false;
 
@@ -517,6 +554,7 @@ function updateTrajectory(i, f, cfg) {
   }
 
   trajectoryGeoms[i].attributes.position.needsUpdate = true;
+  if (REPLAY.body_configs) line.computeLineDistances();
   line.visible = true;
 }
 
@@ -563,38 +601,50 @@ function updateFrame(f) {
 }
   /* CAMERA BUTTONS */
   document.getElementById("reset-camera").onclick = () => {
+    cameraTargetIndex = -1;
+    cameraTargetSelect.value = -1;
     camera.position.set(3, 3, 3);
     controls.target.set(0, 0, 0);
   };
 
   document.getElementById("fit-camera").onclick = () => {
-    camera.position.set(2, 2, 2);
-    controls.target.set(0, 0, 0);
+    if (cameraTargetIndex >= 0 && REPLAY.positions[frame]) {
+      const [x, y, z] = REPLAY.positions[frame][cameraTargetIndex];
+      camera.position.set(x + 2, y + 2, z + 2);
+    } else {
+      camera.position.set(2, 2, 2);
+      controls.target.set(0, 0, 0);
+    }
   };
 
   /* LOOP */
 function animate() {
-    requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
 
-    if (playing) {
-        const totalTime = REPLAY.times[totalFrames - 1];
-        timeFloat += speed * totalTime * 0.0005;  // avance proportionnellement à la durée totale
+  if (playing) {
+    const totalTime = REPLAY.times[totalFrames - 1];
+    timeFloat += speed * totalTime * 0.0005;
 
-        frame = REPLAY.times.findIndex(t => t >= timeFloat);
-        if (frame === -1) {
-            frame = totalFrames - 1;
-            timeFloat = 0;  // réinitialise pour pouvoir rejouer
-            playing = false;
-        }
-
-        timeline.value = frame;
-        updateFrame(frame);
+    frame = REPLAY.times.findIndex(t => t >= timeFloat);
+    if (frame === -1) {
+      frame = totalFrames - 1;
+      timeFloat = 0;
+      playing = false;
     }
 
-    controls.update();
-    renderer.render(scene, camera);
-}
+    timeline.value = frame;
+    updateFrame(frame);
+  }
 
+  // Suivre le corps sélectionné
+  if (cameraTargetIndex >= 0 && REPLAY.positions[frame]) {
+    const [x, y, z] = REPLAY.positions[frame][cameraTargetIndex];
+    controls.target.set(x, y, z);
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+}
   animate();
 </script>
 </body>

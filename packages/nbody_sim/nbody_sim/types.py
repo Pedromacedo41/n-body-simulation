@@ -10,6 +10,8 @@ class System:
     velocities: Array     # (N, 3)
     masses: Array         # (N,)
     G: float = 6.674e-11 * (31557600**2) / (1.495978707e11**3)
+    body_display: list = None
+
     @property
     def state(self): # Use state for vectorial operations
         return np.stack([ self.positions,self.velocities], axis=0)
@@ -25,6 +27,7 @@ class System:
             self.velocities.copy(),
             self.masses.copy(),
             self.G,
+            self.body_display,
         )
 
 
@@ -45,7 +48,8 @@ class ReplayMeta:
 class ReplayData:
     positions: Array  # (T, N, 3)
     times: Array = None  # (T,) — None pour anciens replays
-
+    body_display: list = None
+    
 @dataclass
 class Replay:
     meta: ReplayMeta

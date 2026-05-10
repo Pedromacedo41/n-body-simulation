@@ -9,7 +9,7 @@ def on_replay_change():
     st.session_state.selected_replay = st.session_state.replay_selects
 
 def render_threejs_viewer(replay):
-    with open("app/static/index.html") as f:
+    with open("app/static/index.html", encoding='utf-8') as f:
         html = f.read()
     if replay.data.times is not None:
         times = replay.data.times.tolist()
@@ -19,8 +19,9 @@ def render_threejs_viewer(replay):
     # Aucun dt disponible — on utilise juste les indices de frames
         times = list(range(replay.meta.steps))
     payload = {
-        "positions": replay.data.positions.tolist(),
-        "times": times,
+    "positions": replay.data.positions.tolist(),
+    "times": times,
+    "body_configs": replay.data.body_display, 
     }
 
     html = html.replace(

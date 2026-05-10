@@ -7,7 +7,8 @@ def replay_to_dict(replay: Replay) -> dict:
         "meta": replay.meta.__dict__,
         "data": {
             "positions": replay.data.positions.tolist(),
-            "times": replay.data.times.tolist() if replay.data.times is not None else None,  # ← manquant
+            "times": replay.data.times.tolist() if replay.data.times is not None else None,
+            "body_display": replay.data.body_display,
         }
     }
 
@@ -17,6 +18,7 @@ def replay_from_dict(d):
         data=ReplayData(
             positions=np.array(d["data"]["positions"]),
             times=np.array(d["data"]["times"]) if "times" in d["data"] else None,
+            body_display=d["data"].get("body_display", None),
         )
     )
 
