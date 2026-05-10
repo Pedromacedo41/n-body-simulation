@@ -203,6 +203,7 @@
       <span class="control-label">Timeline</span>
       <input type="range" id="timeline" />
       <span id="time-label" class="control-value"></span>
+      <span id="date-label" class="control-value"></span>
     </div>
 
     <div class="control-column">
@@ -543,13 +544,17 @@ function updateFrame(f) {
     }
   });
 
-  // 2) Mise à jour des trajectoires (une seule fois)
+
   bodiesTrajectories.forEach((_, i) => {
     const cfg = bodyDisplayConfig[i];
     updateTrajectory(i, f, cfg);
   });
 
-  document.getElementById("time-label").textContent = `Frame ${f}`;
+  const t = REPLAY.times ? REPLAY.times[f] : f * (1/60);
+  const years = Math.floor(t);
+  const days = Math.floor((t - years) * 365.25);
+  document.getElementById("time-label").textContent = `Frame ${f} / ${totalFrames - 1}`;
+  document.getElementById("date-label").textContent = `t = ${years} ans ${days} j`;
 }
   /* CAMERA BUTTONS */
   document.getElementById("reset-camera").onclick = () => {

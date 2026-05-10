@@ -32,7 +32,7 @@ def Solar_system(
     G=6.674e-11 * (31557600**2) / (1.495978707e11**3),
 ) -> System:
     if name is None:
-        name = ["sun", "earth", "mars", "venus", "mercury", "jupiter", "saturn", "uranus", "neptune"]
+        name = ["sun", "earth", "mars", "venus", "jupiter", "saturn", "uranus", "neptune", "mercury"]
 
     ts = load.timescale()
     t = ts.utc(*time)

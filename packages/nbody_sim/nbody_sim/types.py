@@ -27,21 +27,24 @@ class System:
             self.G,
         )
 
+
 @dataclass
 class ReplayMeta:
     name: str
-    dt: float
     steps: int
     integrator: str
     preset: str
-
+    dt: float = None
+    duration: float = None
+    alpha: float = None
+    dt_max: float = None
+    dt_min: float = None
 
 
 @dataclass
 class ReplayData:
     positions: Array  # (T, N, 3)
-
-
+    times: Array = None  # (T,) — None pour anciens replays
 
 @dataclass
 class Replay:

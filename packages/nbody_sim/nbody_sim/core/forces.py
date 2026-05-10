@@ -2,19 +2,14 @@ from nbody_sim.types import System
 import numpy as np
 
 def gravitational_forces(system: System) -> np.ndarray:
-    pos = system.positions
-    m = system.masses
-    n = len(m)
-   
-    forces = np.zeros_like(pos)
-
-    for i in range(n):
-        r = pos - pos[i]
-        dist = np.linalg.norm(r, axis=1) 
-        mask = dist > 0
-
-        forces[i] = system.G * np.sum(
-            (m[mask, None] * r[mask]) / dist[mask, None]**3,
-            axis=0
-        )
-    return forces #Return acceleration : a=f/m
+    #use vector to optimize
+    pos = system.positions  # (N, 3)
+    m = system.masses       # (N,)
+    r = pos[np.newaxis, :, :] - pos[:, np.newaxis, :]
+    dist = np.linalg.norm(r, axis=2)
+    np.fill_diagonal(dist, 1.0)
+    acc = system.G * m[np.newaxis, :, np.newaxis] * r / dist[:, :, np.newaxis]**3
+    np.fill_diagonal(dist, 0.0)
+    mask = (dist == 0)
+    acc[mask] = 0.0
+    return acc.sum(axis=1)

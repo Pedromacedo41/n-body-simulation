@@ -110,4 +110,7 @@ def Rosetta() -> System:
 
 def New_Horizon() -> System:
     return Probe(Departure_time["New_Horizon"],
-    Initial_state["New_Horizon"])
+    Initial_state["New_Horizon"],
+    name = ["sun", "earth","venus", "mars", "jupiter", "saturn", "uranus", "neptune"])
+
+

@@ -11,10 +11,16 @@ def on_replay_change():
 def render_threejs_viewer(replay):
     with open("app/static/index.html") as f:
         html = f.read()
-
+    if replay.data.times is not None:
+        times = replay.data.times.tolist()
+    elif replay.meta.dt is not None:
+        times = [i * replay.meta.dt for i in range(replay.meta.steps)]
+    else:
+    # Aucun dt disponible — on utilise juste les indices de frames
+        times = list(range(replay.meta.steps))
     payload = {
         "positions": replay.data.positions.tolist(),
-        "dt": replay.meta.dt,
+        "times": times,
     }
 
     html = html.replace(
@@ -63,10 +69,10 @@ def replay_tab():
     with col_meta:
         st.subheader("Metadata")
 
+        meta_dict = {k: v for k, v in replay.meta.__dict__.items() if v is not None}
         meta_df = pd.DataFrame(
-            replay.meta.__dict__.items(),
+            meta_dict.items(),
             columns=["Field", "Value"]
         )
         meta_df["Value"] = meta_df["Value"].astype(str)
         st.table(meta_df)
-

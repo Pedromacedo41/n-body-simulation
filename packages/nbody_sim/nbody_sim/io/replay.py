@@ -1,7 +1,7 @@
 import json
 import numpy as np
 from nbody_sim.types import Replay
-
+from nbody_sim.types import Replay, ReplayMeta, ReplayData
 def replay_to_dict(replay: Replay) -> dict:
     return {
         "meta": replay.meta.__dict__,
@@ -10,13 +10,12 @@ def replay_to_dict(replay: Replay) -> dict:
         }
     }
 
-def replay_from_dict(d: dict) -> Replay:
-    from nbody_sim.types import ReplayMeta, ReplayData
-
+def replay_from_dict(d):
     return Replay(
         meta=ReplayMeta(**d["meta"]),
         data=ReplayData(
-            positions=np.array(d["data"]["positions"])
+            positions=np.array(d["data"]["positions"]),
+            times=np.array(d["data"]["times"]) if "times" in d["data"] else None,
         )
     )
 

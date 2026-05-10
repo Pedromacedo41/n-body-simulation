@@ -10,6 +10,7 @@ python = ">=3.11,<4.0"
 nbody-sim = { path = "packages/nbody_sim", develop = true }
 streamlit = "^1.53.1"
 skyfield = "^1.54"
+astropy = "^7.2.0"
 
 [build-system]
 requires = ["poetry-core"]

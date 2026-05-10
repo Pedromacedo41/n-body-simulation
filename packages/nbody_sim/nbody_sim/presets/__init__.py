@@ -14,7 +14,8 @@ PRESETS = {
     "Voyager2":Voyager2,
     "Cassini":Cassini,
     "Rosetta":Rosetta,
-    "Messenger":Messenger
+    "Messenger":Messenger,
+    "New Horizon":New_Horizon
 }
 
 def list_presets():
