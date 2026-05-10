@@ -56,7 +56,7 @@ def replay_tab():
         if st.button("Delete"):
             path = Path("data/replays") / selected
             delete_replay(path)
-            st.experimental_rerun()
+            st.rerun()
 
     replay = load_replay_file(Path("data/replays") / selected)
 

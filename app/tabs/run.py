@@ -26,10 +26,9 @@ def run_simulation():
     if step_mode == "Adaptatif":
         iterator = simulator.run_adaptive(
             t_total=duration,
-            alpha=st.session_state.alpha,
-            dt_max=st.session_state.dt_max,
-            dt_min=st.session_state.dt_min,
-        )
+            alpha=st.session_state.get("alpha", 0.01),
+            dt_max=st.session_state.get("dt_max", 0.0001),
+            dt_min=st.session_state.get("dt_min", 1e-8),)
         for i, (t, state) in enumerate(iterator):
             if i % st.session_state.save_every == 0:
                 positions.append(state.positions.copy())
@@ -38,7 +37,7 @@ def run_simulation():
             status.text(f"t={t:.4f} / {duration:.2f} ans")
 
     else:
-        dt = st.session_state.dt
+        dt = st.session_state.get("dt", 0.0001)
         steps = int(duration / dt)
         for step, state in simulator.run_iter(dt=dt, steps=steps):
             if step % st.session_state.save_every == 0:

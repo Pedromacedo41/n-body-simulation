@@ -6,7 +6,8 @@ def replay_to_dict(replay: Replay) -> dict:
     return {
         "meta": replay.meta.__dict__,
         "data": {
-            "positions": replay.data.positions.tolist()
+            "positions": replay.data.positions.tolist(),
+            "times": replay.data.times.tolist() if replay.data.times is not None else None,  # ← manquant
         }
     }
 

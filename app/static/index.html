@@ -454,17 +454,21 @@ REPLAY.positions[0].forEach((_, i) => {
 });
 
 /* PLAYER */
-let frame = 0, frameFloat = 0, speed = 1, playing = false;
+let frame = 0, frameFloat = 0, timeFloat = 0, speed = 1, playing = false;
 
 const timeline = document.getElementById("timeline");
 timeline.max = totalFrames - 1;
 
-document.getElementById("play").onclick = () => playing = true;
+document.getElementById("play").onclick = () => {
+    if (frame === totalFrames - 1) timeFloat = 0;  // repart du début si fini
+    playing = true;
+}
 document.getElementById("pause").onclick = () => playing = false;
 
 timeline.oninput = () => {
-  frame = frameFloat = +timeline.value;
-  updateFrame(frame);
+    frame = +timeline.value;
+    timeFloat = REPLAY.times ? REPLAY.times[frame] : frame / fps;
+    updateFrame(frame);
 };
 
 document.getElementById("speed-slider").oninput = e => {
@@ -553,6 +557,7 @@ function updateFrame(f) {
   const t = REPLAY.times ? REPLAY.times[f] : f * (1/60);
   const years = Math.floor(t);
   const days = Math.floor((t - years) * 365.25);
+
   document.getElementById("time-label").textContent = `Frame ${f} / ${totalFrames - 1}`;
   document.getElementById("date-label").textContent = `t = ${years} ans ${days} j`;
 }
@@ -568,20 +573,27 @@ function updateFrame(f) {
   };
 
   /* LOOP */
-  function animate() {
+function animate() {
     requestAnimationFrame(animate);
 
     if (playing) {
-      frameFloat += speed;
-      frame = Math.min(Math.floor(frameFloat), totalFrames - 1);
-      timeline.value = frame;
-      updateFrame(frame);
-      if (frame === totalFrames - 1) playing = false;
+        const totalTime = REPLAY.times[totalFrames - 1];
+        timeFloat += speed * totalTime * 0.0005;  // avance proportionnellement à la durée totale
+
+        frame = REPLAY.times.findIndex(t => t >= timeFloat);
+        if (frame === -1) {
+            frame = totalFrames - 1;
+            timeFloat = 0;  // réinitialise pour pouvoir rejouer
+            playing = false;
+        }
+
+        timeline.value = frame;
+        updateFrame(frame);
     }
 
     controls.update();
     renderer.render(scene, camera);
-  }
+}
 
   animate();
 </script>
