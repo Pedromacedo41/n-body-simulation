@@ -8,7 +8,7 @@ from nbody_sim.presets.Solar_system import BODY_DISPLAY
 SPK_FILES = {
     "default": "de440.bsp",
     "jupiter_satellites": "jup365.bsp",  # Io, Europa, Ganymède, Callisto, Amalthée
-    "saturn_satellites": "sat441.bsp",   # Dione, Mimas, Encelade, Téthys
+    "saturn_satellites": "sat441.bsp",   # Dione, Mimas, Encelade, Téthys,Titan
 }
 
 BODY_MAP = {
@@ -29,6 +29,7 @@ BODY_MAP = {
     "callisto": "Callisto",
     "amalthea": "Amalthea",
     # Saturn satellites
+    "titan": 606,
     "dione": "Dione",
     "mimas": "Mimas",
     "enceladus": "Enceladus",
@@ -36,7 +37,6 @@ BODY_MAP = {
 }
 
 MASSES = {
-    
     "sun": 1.988e30,
     "mercury": 3.301e23,
     "venus": 4.867e24,
@@ -46,13 +46,12 @@ MASSES = {
     "saturn": 5.683e26,
     "uranus": 8.681e25,
     "neptune": 1.024e26,
-    
     "io":       8.932e22,
     "europa":   4.800e22,
     "ganymede": 1.482e23,
     "callisto": 1.076e23,
     "amalthea": 2.080e18,
-    
+    "titan": 1.345e23,
     "dione":    1.095e21,
     "mimas":    3.749e19,
     "enceladus":1.080e20,
@@ -75,7 +74,7 @@ BODY_DISPLAY = {
     "ganymede": {"name": "Ganymède", "color": "#A0A0A0", "size": 0.025},
     "callisto": {"name": "Callisto", "color": "#6B5A3E", "size": 0.025},
     "amalthea": {"name": "Amalthée", "color": "#CC4400", "size": 0.01},
-    
+    "titan": {"name": "Titan", "color": "#E8A830", "size": 0.018},
     "dione":    {"name": "Dioné",    "color": "#D0D0D0", "size": 0.015},
     "mimas":    {"name": "Mimas",    "color": "#B0B0B0", "size": 0.01},
     "enceladus":{"name": "Encelade", "color": "#FFFFFF", "size": 0.012},
@@ -87,16 +86,16 @@ VOYAGER1_CONFIGS = {
     "Système solaire complet": [
         "sun", "earth", "venus", "mars", "jupiter", "saturn", "uranus", "neptune"
     ],
-    "Soleil + Jupiter + satellites galiléens + Amalthée": [
+    "Jovian Syteme": [
         "sun", "jupiter", "io", "europa", "ganymede", "callisto", "amalthea"
     ],
-    "Soleil + Saturne + satellites": [
-        "sun", "saturn", "dione", "mimas", "enceladus", "tethys"
+    "Saturnian System": [
+        "sun", "saturn", "dione", "mimas", "enceladus", "tethys","titan"
     ],
 }
 
 SATELLITES_JUPITER = {"io", "europa", "ganymede", "callisto", "amalthea"}
-SATELLITES_SATURN = {"dione", "mimas", "enceladus", "tethys"}
+SATELLITES_SATURN = {"dione", "mimas", "enceladus", "tethys", "titan"}
 
 from skyfield.api import load
 from skyfield.framelib import ecliptic_J2000_frame
@@ -109,7 +108,7 @@ SPK_FILES = {
 }
 
 SATELLITES_JUPITER = {"io", "europa", "ganymede", "callisto", "amalthea"}
-SATELLITES_SATURN = {"dione", "mimas", "enceladus", "tethys"}
+SATELLITES_SATURN = {"dione", "mimas", "enceladus", "tethys","titan"}
 
 def Probe(
     departure_time,
